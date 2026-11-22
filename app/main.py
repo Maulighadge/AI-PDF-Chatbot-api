@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.db.session import init_db
-from app.api.endpoints import health, pdf, chat
+from app.api.v1.router import api_router as api_v1_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,16 +30,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include Routers with both /api/v1 and /api prefixes
-app.include_router(health.router, prefix=settings.API_V1_PREFIX)
-app.include_router(pdf.router, prefix=settings.API_V1_PREFIX)
-app.include_router(chat.router, prefix=settings.API_V1_PREFIX)
+# Mount Versioned API Router (/api/v1)
+app.include_router(api_v1_router, prefix=settings.API_V1_PREFIX)
 
-# Also mount under /api to strictly mirror Blueprint endpoints (/api/documents, /api/chats)
-app.include_router(pdf.router, prefix="/api")
-app.include_router(chat.router, prefix="/api")
+# Also mount under /api for seamless backward compatibility with Blueprint endpoints (/api/documents, /api/chats)
+app.include_router(api_v1_router, prefix="/api")
 
-@app.get("/")
+@app.get("/", tags=["Root"])
 def root():
     return {
         "message": f"Welcome to {settings.PROJECT_NAME}",

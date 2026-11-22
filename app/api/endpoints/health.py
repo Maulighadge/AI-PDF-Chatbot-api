@@ -1,12 +1,6 @@
-from fastapi import APIRouter
-from app.core.config import settings
+"""
+Backward-compatibility bridge: routes forward to app.api.v1.endpoints.health.
+"""
+from app.api.v1.endpoints.health import router
 
-router = APIRouter()
-
-@router.get("/health")
-def health_check():
-    return {
-        "status": "online",
-        "service": settings.PROJECT_NAME,
-        "version": settings.VERSION
-    }
+__all__ = ["router"]
